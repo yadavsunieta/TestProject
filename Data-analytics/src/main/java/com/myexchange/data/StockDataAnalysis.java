@@ -2,11 +2,14 @@ package com.myexchange.data;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -67,14 +70,23 @@ public class StockDataAnalysis {
 		}
 		String line = "";
 		System.out.println("Reading input file : "+dir+fileName);
-		try (BufferedReader br = new BufferedReader(new FileReader(dir + fileName))) {
-			while ((line = br.readLine()) != null) {
-				output.add(Arrays.asList(line.split(COMMA)));
+	
+		try {
+			File file = new File(dir + fileName);
+			if (!file.exists()) {
+				file = new File(StockDataAnalysis.class.getClassLoader().getResource(dir + fileName).toURI());
 			}
-		} catch (FileNotFoundException e) {
-			System.out.print("No file with name ["+fileName+"] found under dir ["+dir+"]");
-		} catch (IOException e) {
-			System.out.print("Error occured while reading file ["+fileName+"]");
+			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+				while ((line = br.readLine()) != null) {
+					output.add(Arrays.asList(line.split(COMMA)));
+				}
+			} catch (FileNotFoundException e) {
+				System.out.print("No file with name [" + fileName + "] found under dir [" + dir + "]");
+			} catch (IOException e) {
+				System.out.print("Error occured while reading file [" + fileName + "]");
+			}
+		} catch (URISyntaxException uriSyntaxException) {
+			System.out.print("Invalid file location [" + dir + fileName + "] ");
 		}
 		System.out.println(output.size()+" lines read from file : "+dir+fileName);
 		return output;
